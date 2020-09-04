@@ -1,5 +1,6 @@
 import requests
 import json
+import copy
 
 class pHin():
 
@@ -61,7 +62,7 @@ class pHin():
 			"user": {
 				"locationsUrl": "/users/3482/locations",
 				"userRefreshTokenUrl": "/users/3482/refreshToken",
-		  	}
+			}
 		}
 		'''
 		req = requests.post(
@@ -82,4 +83,83 @@ class pHin():
 		self.refreshToken = reqJson["refresh_token"]
 		self.urls["locations"] = reqJson["user"]["locationsUrl"]
 		self.urls["userRefresh"] = reqJson["user"]["userRefreshTokenUrl"]
+
+	def createHeader(self, version="1.0.0"):
+		tempHeader = copy.deepcopy(self.baseHeaders)
+		tempHeader["Accept-Version"] = version
+		tempHeader["Authorization"] = "Bearer " + self.authToken
+		return tempHeader
+
+	def getTemperature(self):
+		if self.authToken == None:
+			raise Exception("Application Not Authorized!")
+
+		''' locations
+		{
+		   "success":true,
+		   "locations":[
+			  {
+				 "vesselSummaries":[
+					{
+					   "disc":{
+							"temperature":{
+								"celsius":21.25,
+								"fahrenheit":70.3
+						  }
+					   }
+					}
+				 ]
+			  }
+		   ]
+		}
+		'''
+		req = requests.get(
+			self.baseUrl+self.urls["locations"],
+			headers=self.createHeader("2.0.1")
+			)
+		reqJson = json.loads(req.text)
+
+		if not reqJson["success"]:
+			raise Exception(reqJson)
+		print(reqJson)
+		return reqJson["locations"][0]["vesselSummaries"][0]["disc"]["temperature"]["fahrenheit"]
+
+	def getActionsNeeded(self):
+		if self.authToken == None:
+			raise Exception("Application Not Authorized!")
+
+		''' locations
+		{
+		   "success":true,
+		   "locations":[
+			  {
+				 "vesselSummaries":[
+					{
+					   "disc":{
+							"title": "<X> actions needed",
+							"temperature":{
+								"celsius":21.25,
+								"fahrenheit":70.3
+						  }
+					   }
+					}
+				 ]
+			  }
+		   ]
+		}
+		'''
+		req = requests.get(
+			self.baseUrl+self.urls["locations"],
+			headers=self.createHeader("2.0.1")
+			)
+		reqJson = json.loads(req.text)
+
+		if not reqJson["success"]:
+			raise Exception(reqJson)
+		print(reqJson)
+		return reqJson["locations"][0]["vesselSummaries"][0]["disc"]["title"]
+
+
+
+
 
