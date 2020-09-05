@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+"""
+pHin Unoffical Python API
+Copyright (C) 2020 StarDylan
+"""
 import requests
 import json
 import copy
@@ -109,7 +114,7 @@ class pHin():
 		vesselUrl = reqJson["locations"][0]["resources"]["vessels"]["route"]
 
 		#Auth Dictionary Structure needed to access data.
-		authData = {"authToken":authToken,"UUID":deviceUUID,"vesselUrl":vesselUrl}
+		authData = {"authToken":authToken,"vesselUrl":vesselUrl}
 
 		return authData
 
