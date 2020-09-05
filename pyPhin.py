@@ -23,7 +23,6 @@ class pHin():
 
 	def login(self, contact, deviceUUID):
 
-		self.checkRequest(reqJson)
 		self.checkEmail(contact)
 
 
@@ -44,12 +43,12 @@ class pHin():
 			"token": <token>
 		}
 		'''
-		reqJson = json.loads(requests.post(self.baseUrl+urls["signin"],
+		req = requests.post(self.baseUrl+urls["signin"],
 			json={"contact":contact,"deviceType":"python"},
-			headers=createHeader(deviceUUID)).text)
+			headers=createHeader(deviceUUID)).text
 
-
-
+		self.checkRequest(req.text)
+		reqJson = json.loads(req.text)
 
 		#Returns Route needed to verify
 		return reqJson["verifyUrl"]
@@ -80,10 +79,10 @@ class pHin():
 				"verificationCode":verificationCode},
 			headers=createHeader(deviceUUID))
 
+
+		self.checkRequest(req.text)
 		reqJson = json.loads(req.text)
 
-		if not reqJson["success"]:
-			raise Exception(reqJson)
 		if "existing" in reqJson:
 			raise Exception("Contact does not exist!")
 
@@ -123,7 +122,7 @@ class pHin():
 			)
 		reqJson = json.loads(req.text)
 
-		self.checkRequest(reqJson)
+		self.checkRequest(req.text)
 
 		vesselUrl = reqJson["locations"][0]["resources"]["vessels"]["route"]
 
@@ -153,8 +152,9 @@ class pHin():
 			headers=self.createHeader(deviceUUID, authToken, "2.0.0")
 			)
 
+
+		self.checkRequest(req.text)
 		reqJson = json.loads(req.text)
-		self.checkRequest(reqJson)
 
 		data = {}
 
@@ -177,16 +177,19 @@ class pHin():
 	def createHeader(self, deviceUUID, authToken=None, version="1.0.0"):
 		headers = {"x-phin-concise":"true",
 			"x-phin-reporting-app-id":"ios-app",
-			"x-phin-reporting-device-id":deviceUUID}
-		headers["Accept-Version"] = version
+			"x-phin-reporting-device-id":deviceUUID,
+			"Accept-Version": version}
 		if authToken != None:
 			headers["Authorization"] = "Bearer " + authToken
 		return headers
 
-	def checkRequest(self, json):
-		if not json["success"]:
-			raise Exception(json)
+	def checkRequest(self, jsonText):
+		jsonParsed = json.loads(jsonText)
+		if not jsonParsed["success"]:
+			raise Exception(jsonText)
 	def checkUrlRoute(self, urlRoute):
+		if type(urlRoute) != str:
+			raise Exception("URL Route is not a String!")
 		if re.match("^\/",urlRoute) == None:
 			raise Exception("Not a Valid URL Route!")
 	def checkEmail(self, email):
