@@ -3,9 +3,11 @@
 pHin Unoffical Python API
 Copyright (C) 2020 StarDylan
 """
+
 import requests
 import json
 import copy
+import re
 
 class pHin():
 
@@ -15,6 +17,10 @@ class pHin():
 		pass
 
 	def login(self, contact, deviceUUID):
+
+		self.checkRequest(reqJson)
+		self.checkEmail(contact)
+
 
 		''' urls
 		{
@@ -39,13 +45,16 @@ class pHin():
 
 
 
-		self.checkRequest(reqJson)
 
 		#Returns Route needed to verify
 		return reqJson["verifyUrl"]
 
-
 	def verify(self, contact, deviceUUID, verifyUrl, verificationCode):
+
+		if not verificationCode.isnumeric():
+			raise Exception("Verification Code is not Numeric!")
+		self.checkUrlRoute(verifyUrl)
+		self.checkEmail(contact)
 
 		''' verify_route
 		{n
@@ -118,9 +127,9 @@ class pHin():
 
 		return authData
 
-
-
 	def getData(self, authToken, deviceUUID, vesselUrl):
+
+		self.checkUrlRoute(vesselUrl)
 
 		data = {}
 
@@ -154,6 +163,8 @@ class pHin():
 			"TA":100,
 			"CYA": 40,
 			"TH": 170
+			"temperature":70.9
+			"status":"balanced"
 		}
 		'''
 		return data
@@ -170,3 +181,9 @@ class pHin():
 	def checkRequest(self, json):
 		if not json["success"]:
 			raise Exception(json)
+	def checkUrlRoute(self, urlRoute):
+		if re.match("^\/",urlRoute) == None:
+			raise Exception("Not a Valid URL Route!")
+	def checkEmail(self, email):
+		if re.match("^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$",email) == None:
+			raise Exception("Not a Valid Email!")
