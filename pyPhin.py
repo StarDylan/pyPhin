@@ -7,13 +7,9 @@ class pHin():
 	baseUrl = "https://api.phin.co"
 
 	def __init__(self):
-
+		pass
 
 	def login(self, contact, deviceUUID):
-
-		baseHeaders = {"x-phin-concise":"true",
-			"x-phin-reporting-app-id":"ios-app",
-			"x-phin-reporting-device-id":deviceUUID}
 
 		''' urls
 		{
@@ -34,25 +30,20 @@ class pHin():
 		'''
 		reqJson = json.loads(requests.post(self.baseUrl+urls["signin"],
 			json={"contact":contact,"deviceType":"python"},
-			headers=baseHeaders).text)
+			headers=createHeader(deviceUUID)).text)
 
 
 
-		if reqJson["success"]:
-			#Returns Route to verify
-			return reqJson["verifyUrl"]
-		else:
-			raise Exception(reqJson)
+		self.checkRequest(reqJson)
 
-	def verify(self, contact, verifyUrl, deviceUUID, verificationCode):
+		#Returns Route needed to verify
+		return reqJson["verifyUrl"]
 
-		baseHeaders = {"x-phin-concise":"true",
-			"x-phin-reporting-app-id":"ios-app",
-			"x-phin-reporting-device-id":deviceUUID}
 
+	def verify(self, contact, deviceUUID, verifyUrl, verificationCode):
 
 		''' verify_route
-		{
+		{n
 			"success": true,
 			"existing": <if account exists>,
 			"auth_token": <auth_token>,
@@ -68,7 +59,7 @@ class pHin():
 			json={"contact":contact,
 				"deviceId":deviceUUID,
 				"verificationCode":verificationCode},
-			headers=baseHeaders)
+			headers=createHeader(deviceUUID))
 
 		reqJson = json.loads(req.text)
 
@@ -109,7 +100,7 @@ class pHin():
 		'''
 		req = requests.get(
 			self.baseUrl+locationUrl,
-			headers=self.createHeader(authToken, deviceUUID, "2.0.1")
+			headers=self.createHeader(deviceUUID, authToken, "2.0.1")
 			)
 		reqJson = json.loads(req.text)
 
@@ -118,38 +109,54 @@ class pHin():
 
 		vesselUrl = reqJson["locations"][0]["resources"]["vessels"]["route"]
 
+		#Auth Json Structure needed to access data.
 		auth = {"authToken":authToken,"vesselUrl":vesselUrl,"UUID":deviceUUID}
+
 		return json.dumps(auth)
 
-	def createHeader(self, authToken, deviceUUID, version="1.0.0"):
-		tempHeader = {"x-phin-concise":"true",
+	def createHeader(self, deviceUUID, authToken=None, version="1.0.0"):
+		headers = {"x-phin-concise":"true",
 			"x-phin-reporting-app-id":"ios-app",
 			"x-phin-reporting-device-id":deviceUUID}
-		tempHeader["Accept-Version"] = version
-		tempHeader["Authorization"] = "Bearer " + authToken
-		return tempHeader
+		headers["Accept-Version"] = version
+		if authToken != None:
+			headers["Authorization"] = "Bearer " + authToken
+		return headers
 
-	def getData(self, auth, data):
+	def checkRequest(self, json):
+		if not json["success"]:
+			raise Exception(json)
+
+	def getData(self, auth, uuid):
 
 		dataCluster = json.loads(auth)
 
 		if data.upper() == "TA" or "CYA" or "TH":
-			return self.getWaterQuality(dataCluster["authToken"], dataCluster["vesselUrl"], dataCluster["UUID"], data.upper())
+			return self.getWaterQuality(dataCluster["authToken"], dataCluster["vesselUrl"], dataCluster["UUID"])
 
-	def getWaterQuality(self, authToken, vesselUrl, deviceUUID, waterQualityType):
+	def getWaterQuality(self, authToken, vesselUrl, deviceUUID):
 
 
 		req = requests.get(
 			self.baseUrl+vesselUrl,
-			headers=self.createHeader(authToken,deviceUUID, "2.0.0")
+			headers=self.createHeader(deviceUUID, authToken, "2.0.0")
 			)
 		reqJson = json.loads(req.text)
 		print(reqJson)
 
+		data = {}
 
-		return reqJson["vessels"][0]["waterReport"][waterQualityType]["value"]
+		for dataType in ["TA","CYA","TH"]:
+			data[type] = reqJson["vessels"][0]["waterReport"][dataType]["value"]
 
-
+		'''Sample Return data
+		{
+			"TA":100,
+			"CYA": 40,
+			"TH": 170
+		}
+		'''
+		return data
 
 
 
