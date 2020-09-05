@@ -54,8 +54,8 @@ class pHin():
 			"auth_token": <auth_token>,
 			"refresh_token": <refresh_token>,
 			"user": {
-				"locationsUrl": "/users/3482/locations",
-				"userRefreshTokenUrl": "/users/3482/refreshToken",
+				"locationsUrl": "/users/1234/locations",
+				"userRefreshTokenUrl": "/users/1234/refreshToken",
 			}
 		}
 		'''
@@ -96,7 +96,7 @@ class pHin():
 				 ]
 				"resources":{
 					"vessels": {
-						"route":"/users/.../locations/.../vessels"
+						"route":"/users/1234/locations/1234/vessels"
 					}
 				}
 			  }
@@ -120,13 +120,13 @@ class pHin():
 
 
 
-	def getData(self, authToken, uuid, vesselUrl):
+	def getData(self, authToken, deviceUUID, vesselUrl):
 
 		data = {}
 
 		data["waterData"] = self.getWaterData(
 			authToken,
-			uuid,
+			deviceUUID,
 			vesselUrl)
 
 		return data
