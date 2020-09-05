@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """
-pHin Unoffical Python API
+pyPhin by Dylan Starink - An Unoffical pHin Python API
 Copyright (C) 2020 StarDylan
+https://github.com/StarDylan/pyPhin
+
+"pHin" is a trademark owned by ConnectedYard, Inc., see www.phin.co for more information.
+I am in no way affiliated with the ConnectedYard, Inc. organization.
+
 """
 
 import requests
