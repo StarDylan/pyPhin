@@ -104,15 +104,54 @@ class pHin():
 			)
 		reqJson = json.loads(req.text)
 
-		if not reqJson["success"]:
-			raise Exception(reqJson)
+		self.checkRequest(reqJson)
 
 		vesselUrl = reqJson["locations"][0]["resources"]["vessels"]["route"]
 
-		#Auth Json Structure needed to access data.
-		auth = {"authToken":authToken,"vesselUrl":vesselUrl,"UUID":deviceUUID}
+		#Auth Dictionary Structure needed to access data.
+		authData = {"authToken":authToken,"UUID":deviceUUID,"vesselUrl":vesselUrl}
 
-		return json.dumps(auth)
+		return authData
+
+
+
+	def getData(self, authToken, uuid, vesselUrl):
+
+		data = {}
+
+		data["waterData"] = self.getWaterData(
+			authToken,
+			uuid,
+			vesselUrl)
+
+		return data
+
+	def getWaterData(self, authToken, deviceUUID, vesselUrl):
+
+
+		req = requests.get(
+			self.baseUrl+vesselUrl,
+			headers=self.createHeader(deviceUUID, authToken, "2.0.0")
+			)
+
+		reqJson = json.loads(req.text)
+		self.checkRequest(reqJson)
+
+		data = {}
+
+		for dataType in ["TA","CYA","TH"]:
+			data[dataType] = reqJson["vessels"][0]["waterReport"][dataType]["value"]
+		data["temperature"] = reqJson["vessels"][0]["disc"]["temperatureF"]
+		data["status"] = reqJson["vessels"][0]["disc"]["title"]
+
+		'''Sample Return data
+		{
+			"TA":100,
+			"CYA": 40,
+			"TH": 170
+		}
+		'''
+		return data
 
 	def createHeader(self, deviceUUID, authToken=None, version="1.0.0"):
 		headers = {"x-phin-concise":"true",
@@ -126,37 +165,3 @@ class pHin():
 	def checkRequest(self, json):
 		if not json["success"]:
 			raise Exception(json)
-
-	def getData(self, auth, uuid):
-
-		dataCluster = json.loads(auth)
-
-		if data.upper() == "TA" or "CYA" or "TH":
-			return self.getWaterQuality(dataCluster["authToken"], dataCluster["vesselUrl"], dataCluster["UUID"])
-
-	def getWaterQuality(self, authToken, vesselUrl, deviceUUID):
-
-
-		req = requests.get(
-			self.baseUrl+vesselUrl,
-			headers=self.createHeader(deviceUUID, authToken, "2.0.0")
-			)
-		reqJson = json.loads(req.text)
-		print(reqJson)
-
-		data = {}
-
-		for dataType in ["TA","CYA","TH"]:
-			data[type] = reqJson["vessels"][0]["waterReport"][dataType]["value"]
-
-		'''Sample Return data
-		{
-			"TA":100,
-			"CYA": 40,
-			"TH": 170
-		}
-		'''
-		return data
-
-
-
