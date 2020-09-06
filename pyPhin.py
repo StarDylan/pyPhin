@@ -23,7 +23,6 @@ class pHin():
 
 	def login(self, contact, deviceUUID):
 
-		self.checkRequest(reqJson)
 		self.checkEmail(contact)
 
 
@@ -44,10 +43,13 @@ class pHin():
 			"token": <token>
 		}
 		'''
-		reqJson = json.loads(requests.post(self.baseUrl+urls["signin"],
+		req = requests.post(self.baseUrl+urls["signin"],
 			json={"contact":contact,"deviceType":"python"},
-			headers=createHeader(deviceUUID)).text)
+			headers=self.createHeader(deviceUUID))
 
+
+		self.checkRequest(req)
+		reqJson = json.loads(req.text)
 
 
 
@@ -56,13 +58,12 @@ class pHin():
 
 	def verify(self, contact, deviceUUID, verifyUrl, verificationCode):
 
-		if not verificationCode.isnumeric():
-			raise Exception("Verification Code is not Numeric!")
+
 		self.checkUrlRoute(verifyUrl)
 		self.checkEmail(contact)
 
 		''' verify_route
-		{n
+		{
 			"success": true,
 			"existing": <if account exists>,
 			"auth_token": <auth_token>,
@@ -78,8 +79,10 @@ class pHin():
 			json={"contact":contact,
 				"deviceId":deviceUUID,
 				"verificationCode":verificationCode},
-			headers=createHeader(deviceUUID))
+			headers=self.createHeader(deviceUUID))
 
+
+		self.checkRequest(req)
 		reqJson = json.loads(req.text)
 
 		if not reqJson["success"]:
@@ -121,9 +124,10 @@ class pHin():
 			self.baseUrl+locationUrl,
 			headers=self.createHeader(deviceUUID, authToken, "2.0.1")
 			)
+
+		self.checkRequest(req)
 		reqJson = json.loads(req.text)
 
-		self.checkRequest(reqJson)
 
 		vesselUrl = reqJson["locations"][0]["resources"]["vessels"]["route"]
 
@@ -153,13 +157,15 @@ class pHin():
 			headers=self.createHeader(deviceUUID, authToken, "2.0.0")
 			)
 
+
+		self.checkRequest(req)
 		reqJson = json.loads(req.text)
-		self.checkRequest(reqJson)
 
 		data = {}
 
 		for dataType in ["TA","CYA","TH"]:
 			data[dataType] = reqJson["vessels"][0]["waterReport"][dataType]["value"]
+
 		data["temperature"] = reqJson["vessels"][0]["disc"]["temperatureF"]
 		data["status"] = reqJson["vessels"][0]["disc"]["title"]
 
@@ -174,17 +180,25 @@ class pHin():
 		'''
 		return data
 
-	def createHeader(self, deviceUUID, authToken=None, version="1.0.0"):
+	def createHeader(self, deviceUUID, authToken=None, version=None):
 		headers = {"x-phin-concise":"true",
 			"x-phin-reporting-app-id":"ios-app",
 			"x-phin-reporting-device-id":deviceUUID}
-		headers["Accept-Version"] = version
+		if version != None:
+			headers["Accept-Version"] = version
 		if authToken != None:
 			headers["Authorization"] = "Bearer " + authToken
 		return headers
 
-	def checkRequest(self, json):
-		if not json["success"]:
+	def checkRequest(self, request):
+		if request == None:
+			raise Exception("Request is None!")
+		try:
+			reqJson = json.loads(request.text)
+		except:
+			raise Exception("Request is not Returning Json!")
+
+		if not reqJson["success"]:
 			raise Exception(json)
 	def checkUrlRoute(self, urlRoute):
 		if re.match("^\/",urlRoute) == None:
@@ -192,3 +206,8 @@ class pHin():
 	def checkEmail(self, email):
 		if re.match("^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$",email) == None:
 			raise Exception("Not a Valid Email!")
+	def checkVerificationCode(self, verificationCode):
+		if type(verificationCode) != str:
+			raise Exception("Verification is not String!")
+		if not verificationCode.isnumeric():
+			raise Exception("Verification Code is not Numeric!")
