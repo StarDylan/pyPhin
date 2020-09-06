@@ -11,15 +11,27 @@ I am in no way affiliated with the ConnectedYard, Inc. organization.
 
 import requests
 import json
-import copy
 import re
+import logging
+
+logger = logging.getLogger("pyphin")
+logger.setLevel(logging.WARNING)
+
+
 
 class pHin():
 
 	baseUrl = "https://api.phin.co"
 
-	def __init__(self):
-		pass
+	def __init__(self, logging=False, loggingFile="pyPhin.log"):
+		if logging:
+			#Create File Handler with Formatting
+			formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+			fileHandler  = logging.FileHandler(loggingFile)
+			fileHandler.setFormatter(formatter)
+			fileHandler.setLevel(logging.WARNING)
+
+			logger.addHandler(fileHandler)
 
 	def login(self, contact, deviceUUID):
 
@@ -58,7 +70,7 @@ class pHin():
 
 	def verify(self, contact, deviceUUID, verifyUrl, verificationCode):
 
-
+		self.checkVerificationCode(verificationCode)
 		self.checkUrlRoute(verifyUrl)
 		self.checkEmail(contact)
 
@@ -164,10 +176,19 @@ class pHin():
 		data = {}
 
 		for dataType in ["TA","CYA","TH"]:
-			data[dataType] = reqJson["vessels"][0]["waterReport"][dataType]["value"]
+			try:
+				data[dataType] = reqJson["vessels"][0]["waterReport"][dataType]["value"]
+			except:
+				logging.error("Not able to access %s with %s",dataType,req.text)
 
-		data["temperature"] = reqJson["vessels"][0]["disc"]["temperatureF"]
-		data["status"] = reqJson["vessels"][0]["disc"]["title"]
+		try:
+			data["temperature"] = reqJson["vessels"][0]["disc"]["temperatureF"]
+		except:
+			logging.error("Not able to access temperature with %s",req.text)
+		try:
+			data["status"] = reqJson["vessels"][0]["disc"]["title"]
+		except:
+			logging.error("Not able to access temperature with %s",req.text)
 
 		'''Sample Return data
 		{
@@ -200,14 +221,29 @@ class pHin():
 
 		if not reqJson["success"]:
 			raise Exception(json)
+
 	def checkUrlRoute(self, urlRoute):
+		if type(urlRoute) != str:
+			logigng.critical("Url %s not a String!",urlRoute)
+			raise Exception("Url not a String!")
 		if re.match("^\/",urlRoute) == None:
+			logging.critical("URL %s not Valid!", urlRoute)
 			raise Exception("Not a Valid URL Route!")
+
 	def checkEmail(self, email):
+		if type(email) != str:
+			logging.critical("Email %s not a String!", email)
+			raise Exception("Email not a String!")
+
 		if re.match("^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$",email) == None:
+			logging.critical("Email %s not Valid!",email)
 			raise Exception("Not a Valid Email!")
+
 	def checkVerificationCode(self, verificationCode):
 		if type(verificationCode) != str:
+			logging.critical("Verification Code %s not a String!",verificationCode)
 			raise Exception("Verification is not String!")
+
 		if not verificationCode.isnumeric():
+			logging.critical("Verification Code %s not Numeric")
 			raise Exception("Verification Code is not Numeric!")
