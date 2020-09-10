@@ -184,7 +184,7 @@ class pHin():
 		try:
 			data["status_id"] = reqJson["vessels"][0]["disc"]["waterStatus"]["value"]
 		except:
-			self.logger.error("Not able to access status ID with %s",req.text)
+			self.logger.error("Not able to access status id with %s",req.text)
 
 		'''Sample Return data
 		{
@@ -192,7 +192,8 @@ class pHin():
 			"CYA": 40,
 			"TH": 170
 			"temperature":70.9
-			"status":"balanced"
+			"status":"balanced",
+			"status_id": 1
 		}
 		'''
 		return data

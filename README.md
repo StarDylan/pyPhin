@@ -3,7 +3,7 @@
 ## Simple Usage
 1. Generate a UUID
 ```python
-import uuid 
+import uuid
 deviceUUID = str(uuid.uuid4())
 ```
 2. Instantiate Class and Login Using Email + UUID, storing the token returned
@@ -20,7 +20,7 @@ authData = phin.verify("test@example.com", deviceUUID, login_token,"123456")
 ```python
 #Python Dictionary Returned from verify()
 {
-	"authToken": <authToken>, 
+	"authToken": <authToken>,
 	"vesselUrl": <Url Route to Vessel>
 }
 ```
@@ -37,7 +37,7 @@ value = phin.getData(
 {
 	"waterData":
 		{"TA":80,"CYA":60,"TH":450, "temperature": 80.2,
-		"status":"balanced"}
+		"status":"balanced", "status-id": 1}
 }
 ```
 
@@ -51,4 +51,5 @@ value = phin.getData(
 
 "temperature" #Temperature in Fahrenheit
 "status" #Overall Status of Water
-``` 
+"status-id" #Indexed Value of Status 1-Balanced, 2-Needs Attention, 3 - Danger
+```
