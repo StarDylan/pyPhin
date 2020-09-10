@@ -48,7 +48,7 @@ class pHin():
 			self.logger.critcal("ph, orp, or battery Data Point Avg Len is not an Integer! Exception: %s",e)
 
 	'''login()
-	Used to start verificaiton process by sending a verificaton
+	Used to start verification process by sending a verificaton
 	email request.
 
 	contact - email used to login to account
@@ -268,8 +268,8 @@ class pHin():
 					"temperature":70.9
 				}
 				"pool":{
-					"status": "balanced",
-					"index": 1
+					"status_title": "balanced",
+					"status_id": 1
 					}
 			},
 			{
@@ -325,7 +325,7 @@ class pHin():
 
 		except Exception as e:
 			self.logger.error("Can not Access PH: Exception=%s",e)
-		#ORP
+		#ORP - Oxidation-Reduction Potential (Sanitization)
 		try:
 			orpAvg = sum(reqJson["orpMv"][-self.orpMvDataPointAvgLen:])/self.orpMvDataPointAvgLen
 
@@ -360,7 +360,7 @@ class pHin():
 		except Exception as e:
 			self.logger.error("Can not Access Battery: Exception=%s",e)
 
-		#RSSI
+		#RSSI - Received Signal Strength Indicator
 		try:
 			rssiAvg = sum(reqJson["rssi"][-self.rssiDataPointAvgLen:])/self.rssiDataPointAvgLen
 
