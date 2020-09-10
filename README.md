@@ -37,7 +37,7 @@ value = phin.getData(
 #Sample value from getData()
 {
   'pool': {
-    'status': 'needs-attention',
+    'status_title': 'needs-attention',
     'status_id': 2
   },
   'waterData': {
