@@ -348,14 +348,11 @@ class pHin():
 		try:
 			batteryAvg = sum(reqJson["batteryMv"][-self.batteryDataPointAvgLen:])/self.batteryDataPointAvgLen
 
-			batteryStatus = -1
-			if batteryAvg < 1500:
-				batteryStatus = 1
-			elif batteryAvg > 3500:
-				batteryStatus = 5
-			else:
-				batteryStatus = 3
-			chartData["vesselData"]["battery"] = {"value":batteryAvg,"status":batteryStatus}
+			batteryPercentage = .01
+
+			batteryPercentage = round((batteryAvg - 1500)/(3500-1500),2)
+
+			chartData["vesselData"]["battery"] = {"value":batteryAvg,"percentage":batteryPercentage}
 
 		except Exception as e:
 			self.logger.error("Can not Access Battery: Exception=%s",e)
