@@ -181,6 +181,10 @@ class pHin():
 			data["status"] = reqJson["vessels"][0]["disc"]["title"]
 		except:
 			self.logger.error("Not able to access temperature with %s",req.text)
+		try:
+			data["status_id"] = reqJson["vessels"][0]["disc"]["waterStatus"]["value"]
+		except:
+			self.logger.error("Not able to access status ID with %s",req.text)
 
 		'''Sample Return data
 		{
