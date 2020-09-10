@@ -1,4 +1,5 @@
 
+
 # pyPhin
 
 ## Simple Usage
@@ -83,12 +84,13 @@ waterData:
 "ph":
 	"value" #Value of pH
 	"status" #Status of pH (Integer 1-5)
-"orp":
+
+"orp": #Oxidation-Reduction Potential (Sanitization)
 	"value" #Value of ORP in mV
 	"status" #Status of ORP (1,3 or 5)
 
 vesselData:
-"rssi"
+"rssi" #Received Signal Strength Indicator
 	"value" #Value of RSSI in dB
 	"status" #Status of RSSI (1,3 or 5)
 "battery":
