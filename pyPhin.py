@@ -351,6 +351,10 @@ class pHin():
 			batteryPercentage = .01
 
 			batteryPercentage = round((batteryAvg - 1500)/(3500-1500),2)
+			if batteryPercentage <= 0:
+				batteryPercentage = 0.01
+			elif batteryPercentage >= 1:
+				batteryPercentage = 1
 
 			chartData["vesselData"]["battery"] = {"value":batteryAvg,"percentage":batteryPercentage}
 
