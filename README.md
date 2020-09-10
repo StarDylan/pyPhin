@@ -1,3 +1,4 @@
+
 # pyPhin
 
 ## Simple Usage
@@ -35,9 +36,34 @@ value = phin.getData(
 ```python
 #Sample value from getData()
 {
-	"waterData":
-		{"TA":80,"CYA":60,"TH":450, "temperature": 80.2,
-		"status":"balanced", "status-id": 1}
+  'pool': {
+    'status': 'needs-attention',
+    'status_id': 2
+  },
+  'waterData': {
+    'ta': 80,
+    'cya': 60,
+    'th': 450,
+    'temperature': 75.0,
+    'ph': {
+      'value': 7.2,
+      'status': 3
+    },
+    'orp': {
+      'value': 550.2,
+      'status': 2
+    }
+  },
+  'vesselData': {
+    'battery': {
+      'value': 3000.2,
+      'status': 3
+    },
+    'rssi': {
+      'value': -92,
+      'status': 3
+    }
+  }
 }
 ```
 
@@ -45,11 +71,38 @@ value = phin.getData(
 ## Implemented Data Types
 
 ```python
-"TH" #Total Hardness (Nominal 150-399 ppm)
-"CYA" #Cyanuric Acid (Nominal 20-99 ppm)
-"TA" #Total Alkalinity (Nominal 80-150 ppm)
+pool:
+"status_title" #String of Overall Status of Pool
+"status_id" #Indexed status value (See Key Below)
 
+waterData:
+"th" #Total Hardness (Nominal 150-399 ppm)
+"cya" #Cyanuric Acid (Nominal 20-99 ppm)
+"ta" #Total Alkalinity (Nominal 80-150 ppm)
 "temperature" #Temperature in Fahrenheit
-"status" #Overall Status of Water
-"status-id" #Indexed Value of Status 1-Balanced, 2-Needs Attention, 3 - Danger
+"ph":
+	"value" #Value of pH
+	"status" #Status of pH (Integer 1-5)
+"orp":
+	"value" #Value of ORP in mV
+	"status" #Status of ORP (1,3 or 5)
+
+vesselData:
+"rssi"
+	"value" #Value of RSSI in dB
+	"status" #Status of RSSI (1,3 or 5)
+"battery":
+	"value" #Value of battery in mV
+	"status" #Status of Battery (1,3 or 5)
 ```
+Status of data in `waterData` and `vesselData`:
+1 - Needs Immediate Attention (Low)
+2 - Needs Attention (Low)
+3 - Ok
+4 - Needs Attention (High)
+5 - Needs Immediate Attention (High)
+
+`status_id` of `pool`:
+1 - Balanced
+2 - Needs Attention
+3 - Needs Immediate Attention
