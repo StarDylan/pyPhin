@@ -58,7 +58,7 @@ value = phin.getData(
   'vesselData': {
     'battery': {
       'value': 3000.2,
-      'status': 3
+      'percentage': 0.90
     },
     'rssi': {
       'value': -92,
@@ -95,7 +95,7 @@ vesselData:
 	"status" #Status of RSSI (1,3 or 5)
 "battery":
 	"value" #Value of battery in mV
-	"status" #Status of Battery (1,3 or 5)
+	"percentage" #Percent of Battery Remaining (0.01-1.00)
 ```
 Status of data in `waterData` and `vesselData`:
 1 - Needs Immediate Attention (Low)
