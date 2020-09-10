@@ -19,6 +19,16 @@ class pHin():
 
 	baseUrl = "https://api.phin.co"
 
+	'''init()
+	Initializes the Library with Specified parameters
+
+	logger - Used to pass in a logger for module to use
+
+	All remaining parameters used to specify the amount
+	of data points to be used in average calculation.
+	A data point is roughly taken every hour.
+
+	'''
 	def __init__(self, logger=None,
 		phDataPointAvgLen=5,
 		orpMvDataPointAvgLen=5,
@@ -37,6 +47,15 @@ class pHin():
 		except Exception as e:
 			self.logger.critcal("ph, orp, or battery Data Point Avg Len is not an Integer! Exception: %s",e)
 
+	'''login()
+	Used to start verificaiton process by sending a verificaton
+	email request.
+
+	contact - email used to login to account
+	deviceUUID - Any UUID
+
+	Returns verificationUrl needed to call verify()
+	'''
 	def login(self, contact, deviceUUID):
 
 		self.checkEmail(contact)
@@ -72,6 +91,16 @@ class pHin():
 		#Returns Route needed to verify
 		return reqJson["verifyUrl"]
 
+	'''verify()
+	Used to get authorization to the pHin service.
+
+	contact - email used to login to account
+	deviceUUID - Any UUID
+	verifyUrl - Url obtained from login()
+	verficationCode - Numeric code obtained from contact email
+
+	Returns authToken and vesselUrl in a python dictionary object
+	'''
 	def verify(self, contact, deviceUUID, verifyUrl, verificationCode):
 
 		self.checkVerificationCode(verificationCode)
@@ -152,6 +181,17 @@ class pHin():
 
 		return authData
 
+
+	'''getData()
+	Used to get the data from authorized account.
+
+	authToken - Token recieved from login()
+	deviceUUID - Any UUID
+	vesselUrl - vesselUrl from login()
+
+	Returns data in a python dictionary object:
+
+	'''
 	def getData(self, authToken, deviceUUID, vesselUrl):
 		def merge(dict_list):
 		    merged = {}
@@ -217,7 +257,7 @@ class pHin():
 
 		returnData = [data,chartData]
 
-		#TODO: Update Structure to Match Documentation below
+
 		'''Sample Return data
 		[
 			{
