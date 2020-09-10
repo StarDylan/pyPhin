@@ -278,7 +278,7 @@ class pHin():
 					"orp":{"value":800,"status":2}
 				}
 				"vesselData":{
-					"battery":{"value":2000, "status":3},
+					"battery":{"value":2000, "percentage":0.80},
 					"rssi":{"value":-91,"status":3}
 				}
 			}
@@ -380,7 +380,7 @@ class pHin():
 				"orp":{"value":800,"status":2}
 			}
 			"vesselData":{
-				"battery":{"value":2000, "status":2},
+				"battery":{"value":2000, "percentage":0.80},
 				"rssi":{"value":-91,"status":1}
 			}
 		}
