@@ -242,7 +242,7 @@ class pHin():
 		except:
 			self.logger.error("Not able to access temperature with %s",req.text)
 		try:
-			data["pool"]["status"] = reqJson["vessels"][0]["disc"]["name"]
+			data["pool"]["status_title"] = reqJson["vessels"][0]["disc"]["name"]
 		except:
 			self.logger.error("Not able to access temperature with %s",req.text)
 		try:
