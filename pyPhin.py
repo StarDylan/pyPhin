@@ -37,7 +37,8 @@ class pHin():
 		if logger != None:
 			self.logger = logger
 		else:
-			self.logger = logging.getLogger("nullLogger").addHandler(logging.NullHandler())
+			self.logger = logging.getLogger("nullLogger")
+			self.logger.addHandler(logging.NullHandler())
 
 		try:
 			self.phDataPointAvgLen = int(phDataPointAvgLen)
@@ -403,10 +404,15 @@ class pHin():
 		try:
 			reqJson = json.loads(request.text)
 		except:
+			self.logger.critical("Request not Returning Json! Return: %s",request.text)
 			raise Exception("Request is not Returning Json!")
-
+		if "code" in reqJson:
+			if reqJson["code"] == "Unauthorized":
+				self.logger.critical("API Not Authorized! Json=%s",request.text)
+				raise Exception("API not Authorized! Request:" + request.text)
 		if not reqJson["success"]:
-			raise Exception(json)
+			self.logger.critical("Request not Successful! Json=%s",request.text)
+			raise Exception("Request not Successful! Request=" + request.text)
 
 	def checkUrlRoute(self, urlRoute):
 		if type(urlRoute) != str:
