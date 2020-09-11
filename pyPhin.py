@@ -313,14 +313,12 @@ class pHin():
 				phStatus = 1
 			elif phAvg < 7:
 				phStatus = 2
-			elif phAvg >= 7 and phAvg <= 7.5:
+			elif phAvg <= 7.5:
 				phStatus = 3
-			elif phAvg > 7.5:
+			elif phAvg <= 7.8:
 				phStatus = 4
-			elif phAvg > 7.8:
-				phStatus = 5
 			else:
-				self.logger.error("PH Status not Classified: PH_AVG=%s",phAvg)
+				phStatus = 5
 			chartData["waterData"]["ph"] = {"value":phAvg,"status":phStatus}
 
 		except Exception as e:
@@ -334,12 +332,10 @@ class pHin():
 				orpStatus = 1
 			elif orpAvg < 600:
 				orpStatus = 2
-			elif orpAvg >= 600 and orpAvg <= 875:
+			elif orpAvg <= 875:
 				orpStatus = 3
-			elif orpAvg > 875:
-				orpStatus = 5
 			else:
-				self.logger.error("ORP Status not Classified: ORP_AVG=%s",orpAvg)
+				orpStatus = 5
 			chartData["waterData"]["orp"] = {"value":orpAvg,"status":orpStatus}
 
 		except Exception as e:
