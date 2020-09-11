@@ -19,12 +19,43 @@ class pHin():
 
 	baseUrl = "https://api.phin.co"
 
-	def __init__(self, logger=None):
+	'''init()
+	Initializes the Library with Specified parameters
+
+	logger - Used to pass in a logger for module to use
+
+	All remaining parameters used to specify the amount
+	of data points to be used in average calculation.
+	A data point is roughly taken every hour.
+
+	'''
+	def __init__(self, logger=None,
+		phDataPointAvgLen=5,
+		orpMvDataPointAvgLen=5,
+		batteryDataPointAvgLen=5,
+		rssiDataPointAvgLen=1):
 		if logger != None:
 			self.logger = logger
 		else:
 			self.logger = logging.getLogger("nullLogger").addHandler(logging.NullHandler())
 
+		try:
+			self.phDataPointAvgLen = int(phDataPointAvgLen)
+			self.orpMvDataPointAvgLen = int(orpMvDataPointAvgLen)
+			self.batteryDataPointAvgLen = int(batteryDataPointAvgLen)
+			self.rssiDataPointAvgLen = int(rssiDataPointAvgLen)
+		except Exception as e:
+			self.logger.critcal("ph, orp, or battery Data Point Avg Len is not an Integer! Exception: %s",e)
+
+	'''login()
+	Used to start verification process by sending a verificaton
+	email request.
+
+	contact - email used to login to account
+	deviceUUID - Any UUID
+
+	Returns verificationUrl needed to call verify()
+	'''
 	def login(self, contact, deviceUUID):
 
 		self.checkEmail(contact)
@@ -60,6 +91,16 @@ class pHin():
 		#Returns Route needed to verify
 		return reqJson["verifyUrl"]
 
+	'''verify()
+	Used to get authorization to the pHin service.
+
+	contact - email used to login to account
+	deviceUUID - Any UUID
+	verifyUrl - Url obtained from login()
+	verficationCode - Numeric code obtained from contact email
+
+	Returns authToken and vesselUrl in a python dictionary object
+	'''
 	def verify(self, contact, deviceUUID, verifyUrl, verificationCode):
 
 		self.checkVerificationCode(verificationCode)
@@ -140,16 +181,39 @@ class pHin():
 
 		return authData
 
-	def getData(self, authToken, deviceUUID, vesselUrl):
 
+	'''getData()
+	Used to get the data from authorized account.
+
+	authToken - Token recieved from login()
+	deviceUUID - Any UUID
+	vesselUrl - vesselUrl from login()
+
+	Returns data in a python dictionary object:
+
+	'''
+	def getData(self, authToken, deviceUUID, vesselUrl):
+		def merge(dict_list):
+		    merged = {}
+		    for item in dict_list:
+		        for key in item.keys():
+		            try:
+		                merged[key].update(item[key])
+		            except KeyError:
+		                merged[key] = {}
+		                merged[key].update(item[key])
+		    return merged
 		self.checkUrlRoute(vesselUrl)
 
 		data = {}
 
-		data["waterData"] = self.getWaterData(
+		dataList = self.getWaterData(
 			authToken,
 			deviceUUID,
 			vesselUrl)
+
+		data = merge(dataList)
+
 
 		return data
 
@@ -165,37 +229,163 @@ class pHin():
 		self.checkRequest(req)
 		reqJson = json.loads(req.text)
 
-		data = {}
+		data = {"waterData":{},"pool":{}}
 
 		for dataType in ["TA","CYA","TH"]:
 			try:
-				data[dataType] = reqJson["vessels"][0]["waterReport"][dataType]["value"]
+				data["waterData"][dataType.lower()] = reqJson["vessels"][0]["waterReport"][dataType]["value"]
 			except:
 				self.logger.error("Not able to access %s with %s",dataType,req.text)
 
 		try:
-			data["temperature"] = reqJson["vessels"][0]["disc"]["temperatureF"]
+			data["waterData"]["temperature"] = reqJson["vessels"][0]["disc"]["temperatureF"]
 		except:
 			self.logger.error("Not able to access temperature with %s",req.text)
 		try:
-			data["status"] = reqJson["vessels"][0]["disc"]["title"]
+			data["pool"]["status_title"] = reqJson["vessels"][0]["disc"]["name"]
 		except:
 			self.logger.error("Not able to access temperature with %s",req.text)
 		try:
-			data["status_id"] = reqJson["vessels"][0]["disc"]["waterStatus"]["value"]
+			data["pool"]["status_id"] = reqJson["vessels"][0]["disc"]["waterStatus"]["value"]
 		except:
-			self.logger.error("Not able to access status ID with %s",req.text)
+			self.logger.error("Not able to access status id with %s",req.text)
+
+		chartData = self.getChartData(
+			authToken,
+			deviceUUID,
+			reqJson["vessels"][0]["widgets"][0]["resources"]["appChartsWeek"]["route"])
+
+		returnData = [data,chartData]
+
 
 		'''Sample Return data
+		[
+			{
+				"waterData":{
+					"ta":100,
+					"cya": 40,
+					"th": 170,
+					"temperature":70.9
+				}
+				"pool":{
+					"status_title": "balanced",
+					"status_id": 1
+					}
+			},
+			{
+				"waterData":{
+					"ph":{"value":8.2, "status":1},
+					"orp":{"value":800,"status":2}
+				}
+				"vesselData":{
+					"battery":{"value":2000, "percentage":0.80},
+					"rssi":{"value":-91,"status":3}
+				}
+			}
+		]
+		'''
+		return returnData
+
+	def getChartData(self, authToken, deviceUUID, chartUrl):
+		req = requests.get(
+			self.baseUrl + chartUrl,
+			headers=self.createHeader(deviceUUID, authToken, "1.0.0")
+			)
+		self.checkRequest(req)
+		reqJson = json.loads(req.text)
+
+		chartData = {"waterData":{},"vesselData":{}}
+
+		'''Status Codes
+		1 - Needs Immediate Attention Low
+		2 - Needs Attention Low
+		3 - Ok
+		4 - Needs Attention High
+		5 - Needs Immediate Attention High
+		'''
+
+		#PH
+		try:
+			phAvg = sum(reqJson["ph"][-self.phDataPointAvgLen:])/self.phDataPointAvgLen
+
+			phStatus = -1
+			if phAvg < 6.8:
+				phStatus = 1
+			elif phAvg < 7:
+				phStatus = 2
+			elif phAvg <= 7.5:
+				phStatus = 3
+			elif phAvg <= 7.8:
+				phStatus = 4
+			else:
+				phStatus = 5
+			chartData["waterData"]["ph"] = {"value":phAvg,"status":phStatus}
+
+		except Exception as e:
+			self.logger.error("Can not Access PH: Exception=%s",e)
+		#ORP - Oxidation-Reduction Potential (Sanitization)
+		try:
+			orpAvg = sum(reqJson["orpMv"][-self.orpMvDataPointAvgLen:])/self.orpMvDataPointAvgLen
+
+			orpStatus = -1
+			if orpAvg < 300:
+				orpStatus = 1
+			elif orpAvg < 600:
+				orpStatus = 2
+			elif orpAvg <= 875:
+				orpStatus = 3
+			else:
+				orpStatus = 5
+			chartData["waterData"]["orp"] = {"value":orpAvg,"status":orpStatus}
+
+		except Exception as e:
+			self.logger.error("Can not Access ORP: Exception=%s",e)
+		#BatteryMv
+		try:
+			batteryAvg = sum(reqJson["batteryMv"][-self.batteryDataPointAvgLen:])/self.batteryDataPointAvgLen
+
+			batteryPercentage = .01
+
+			batteryPercentage = round((batteryAvg - 1500)/(3500-1500),2)
+			if batteryPercentage <= 0:
+				batteryPercentage = 0.01
+			elif batteryPercentage >= 1:
+				batteryPercentage = 1
+
+			chartData["vesselData"]["battery"] = {"value":batteryAvg,"percentage":batteryPercentage}
+
+		except Exception as e:
+			self.logger.error("Can not Access Battery: Exception=%s",e)
+
+		#RSSI - Received Signal Strength Indicator
+		try:
+			rssiAvg = sum(reqJson["rssi"][-self.rssiDataPointAvgLen:])/self.rssiDataPointAvgLen
+
+			rssiStatus = -1
+			if rssiAvg < -110:
+				rssiStatus = 1
+			elif rssiAvg > -20:
+				rssiStatus = 5
+			else:
+				rssiStatus = 3
+			chartData["vesselData"]["rssi"] = {"value":rssiAvg,"status":rssiStatus}
+
+		except Exception as e:
+			self.logger.error("Can not Access RSSI: Exception=%s",e)
+
+		'''Sample ChartData Return
 		{
-			"TA":100,
-			"CYA": 40,
-			"TH": 170
-			"temperature":70.9
-			"status":"balanced"
+			"waterData":{
+				"ph":{"value":8.2, "status":1},
+				"orp":{"value":800,"status":2}
+			}
+			"vesselData":{
+				"battery":{"value":2000, "percentage":0.80},
+				"rssi":{"value":-91,"status":1}
+			}
 		}
 		'''
-		return data
+		return chartData
 
 	def createHeader(self, deviceUUID, authToken=None, version=None):
 		headers = {"x-phin-concise":"true",
@@ -231,7 +421,7 @@ class pHin():
 			self.logger.critical("Email %s not a String!", email)
 			raise Exception("Email not a String!")
 
-		if re.match("^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$",email) == None:
+		if re.match("^[a-z0-9]+[\\._]?[a-z0-9]+[@]\\w+[.]\\w+$",email) == None:
 			self.logger.critical("Email %s not Valid!",email)
 			raise Exception("Not a Valid Email!")
 
