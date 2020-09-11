@@ -306,7 +306,7 @@ class pHin():
 
 		#PH
 		try:
-			phAvg = sum(reqJson["ph"][-self.phDataPointAvgLen:])/self.phDataPointAvgLen
+			phAvg = round(sum(reqJson["ph"][-self.phDataPointAvgLen:])/self.phDataPointAvgLen,1)
 
 			phStatus = -1
 			if phAvg < 6.8:
@@ -325,7 +325,7 @@ class pHin():
 			self.logger.error("Can not Access PH: Exception=%s",e)
 		#ORP - Oxidation-Reduction Potential (Sanitization)
 		try:
-			orpAvg = sum(reqJson["orpMv"][-self.orpMvDataPointAvgLen:])/self.orpMvDataPointAvgLen
+			orpAvg = round(sum(reqJson["orpMv"][-self.orpMvDataPointAvgLen:])/self.orpMvDataPointAvgLen, 1)
 
 			orpStatus = -1
 			if orpAvg < 300:
@@ -342,7 +342,7 @@ class pHin():
 			self.logger.error("Can not Access ORP: Exception=%s",e)
 		#BatteryMv
 		try:
-			batteryAvg = sum(reqJson["batteryMv"][-self.batteryDataPointAvgLen:])/self.batteryDataPointAvgLen
+			batteryAvg = round(sum(reqJson["batteryMv"][-self.batteryDataPointAvgLen:])/self.batteryDataPointAvgLen,1)
 
 			batteryPercentage = .01
 
@@ -359,7 +359,7 @@ class pHin():
 
 		#RSSI - Received Signal Strength Indicator
 		try:
-			rssiAvg = sum(reqJson["rssi"][-self.rssiDataPointAvgLen:])/self.rssiDataPointAvgLen
+			rssiAvg = round(sum(reqJson["rssi"][-self.rssiDataPointAvgLen:])/self.rssiDataPointAvgLen,0)
 
 			rssiStatus = -1
 			if rssiAvg < -110:
