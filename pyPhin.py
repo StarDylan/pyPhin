@@ -239,6 +239,17 @@ class pHin():
 				self.logger.error("Not able to access %s with %s",dataType,req.text)
 
 		try:
+			testStrip = False
+			for action in reqJson["vessels"][0]["requiredActions"]:
+				if action["buttonDetails"]["title"] == "Dip a test strip":
+					testStrip = True
+			if testStrip:
+				data["pool"]["test_strip_required"] = True
+			else:
+				data["pool"]["test_strip_required"] = False
+		except:
+			self.logger.error("Not able to access Test Strip with %s",req.text)
+		try:
 			data["waterData"]["temperature"] = reqJson["vessels"][0]["disc"]["temperatureF"]
 		except:
 			self.logger.error("Not able to access temperature with %s",req.text)
@@ -260,30 +271,37 @@ class pHin():
 
 
 		'''Sample Return data
-		[
-			{
-				"waterData":{
-					"ta":100,
-					"cya": 40,
-					"th": 170,
-					"temperature":70.9
-				}
-				"pool":{
-					"status_title": "balanced",
-					"status_id": 1
-					}
-			},
-			{
-				"waterData":{
-					"ph":{"value":8.2, "status":1},
-					"orp":{"value":800,"status":2}
-				}
-				"vesselData":{
-					"battery":{"value":2000, "percentage":0.80},
-					"rssi":{"value":-91,"status":3}
-				}
-			}
-		]
+		{
+		  'pool': {
+		    'status_title': 'needs-attention',
+		    'status_id': 2
+		    'test_strip_required': True
+		  },
+		  'waterData': {
+		    'ta': 80,
+		    'cya': 60,
+		    'th': 450,
+		    'temperature': 75.0,
+		    'ph': {
+		      'value': 7.2,
+		      'status': 3
+		    },
+		    'orp': {
+		      'value': 550.2,
+		      'status': 2
+		    }
+		  },
+		  'vesselData': {
+		    'battery': {
+		      'value': 3000.2,
+		      'percentage': 0.90
+		    },
+		    'rssi': {
+		      'value': -92,
+		      'status': 3
+		    }
+		  }
+		}
 		'''
 		return returnData
 
