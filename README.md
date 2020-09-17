@@ -1,5 +1,6 @@
 
 
+
 # pyPhin
 
 ## Simple Usage
@@ -40,6 +41,7 @@ value = phin.getData(
   'pool': {
     'status_title': 'needs-attention',
     'status_id': 2
+    'test_strip_required': True
   },
   'waterData': {
     'ta': 80,
@@ -75,6 +77,7 @@ value = phin.getData(
 pool:
 "status_title" #String of Overall Status of Pool
 "status_id" #Indexed status value (See Key Below)
+"test_strip_required" #Boolean of Test Strip Required
 
 waterData:
 "th" #Total Hardness (Nominal 150-399 ppm)
