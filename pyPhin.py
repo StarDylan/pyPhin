@@ -240,9 +240,10 @@ class pHin():
 
 		try:
 			testStrip = False
-			for action in reqJson["vessels"][0]["requiredActions"]:
-				if action["buttonDetails"]["title"] == "Dip a test strip":
-					testStrip = True
+			if "requiredActions" in reqJson["vessels"][0]:
+				for action in reqJson["vessels"][0]["requiredActions"]:
+					if action["buttonDetails"]["title"] == "Dip a test strip":
+						testStrip = True
 			data["pool"]["test_strip_required"] = testStrip
 		except:
 			self.logger.error("Not able to access Test Strip with %s",req.text)
