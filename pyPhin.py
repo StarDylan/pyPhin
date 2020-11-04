@@ -59,7 +59,6 @@ class pHin():
 	'''
 	def login(self, contact, deviceUUID):
 
-		self.checkInternetConnection()
 		self.checkEmail(contact)
 
 
@@ -71,7 +70,7 @@ class pHin():
 			"versionCheck": "/version"
 		}
 		'''
-		urls = json.loads(requests.get(self.baseUrl + "/urls").text)
+		urls = json.loads(self.requestGet(self.baseUrl + "/urls").text)
 
 		''' signin
 		{
@@ -80,7 +79,7 @@ class pHin():
 			"token": <token>
 		}
 		'''
-		req = requests.post(self.baseUrl+urls["signin"],
+		req = self.requestPost(self.baseUrl+urls["signin"],
 			json={"contact":contact,"deviceType":"python"},
 			headers=self.createHeader(deviceUUID))
 
@@ -105,8 +104,6 @@ class pHin():
 	'''
 	def verify(self, contact, deviceUUID, verifyUrl, verificationCode):
 
-		self.checkInternetConnection()
-
 		self.checkVerificationCode(verificationCode)
 		self.checkUrlRoute(verifyUrl)
 		self.checkEmail(contact)
@@ -123,7 +120,7 @@ class pHin():
 			}
 		}
 		'''
-		req = requests.post(
+		req = self.requestPost(
 			self.baseUrl+verifyUrl,
 			json={"contact":contact,
 				"deviceId":deviceUUID,
@@ -169,7 +166,7 @@ class pHin():
 		   ]
 		}
 		'''
-		req = requests.get(
+		req = self.requestGet(
 			self.baseUrl+locationUrl,
 			headers=self.createHeader(deviceUUID, authToken, "2.0.1")
 			)
@@ -198,8 +195,6 @@ class pHin():
 	'''
 	def getData(self, authToken, deviceUUID, vesselUrl):
 
-		self.checkInternetConnection()
-
 		def merge(dict_list):
 		    merged = {}
 		    for item in dict_list:
@@ -227,7 +222,7 @@ class pHin():
 	def getWaterData(self, authToken, deviceUUID, vesselUrl):
 
 
-		req = requests.get(
+		req = self.requestGet(
 			self.baseUrl+vesselUrl,
 			headers=self.createHeader(deviceUUID, authToken, "2.0.0")
 			)
@@ -310,7 +305,7 @@ class pHin():
 		return returnData
 
 	def getChartData(self, authToken, deviceUUID, chartUrl):
-		req = requests.get(
+		req = self.requestGet(
 			self.baseUrl + chartUrl,
 			headers=self.createHeader(deviceUUID, authToken, "1.0.0")
 			)
@@ -420,9 +415,15 @@ class pHin():
 			headers["Authorization"] = "Bearer " + authToken
 		return headers
 
-	def checkInternetConnection(self):
+	def requestGet(self,url,headers={}):
 		try:
-			requests.get("http://www.google.com")
+			return requests.get(url,headers=headers)
+		except requests.ConnectionError:
+			self.logger.critical("No Internet Connection!")
+			raise requests.ConnectionError
+	def requestPost(self,url,json={},headers={}):
+		try:
+			return requests.post(url,headers=headers,json=json)
 		except requests.ConnectionError:
 			self.logger.critical("No Internet Connection!")
 			raise requests.ConnectionError
