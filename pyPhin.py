@@ -59,6 +59,7 @@ class pHin():
 	'''
 	def login(self, contact, deviceUUID):
 
+		self.checkInternetConnection()
 		self.checkEmail(contact)
 
 
@@ -103,6 +104,8 @@ class pHin():
 	Returns authToken and vesselUrl in a python dictionary object
 	'''
 	def verify(self, contact, deviceUUID, verifyUrl, verificationCode):
+
+		self.checkInternetConnection()
 
 		self.checkVerificationCode(verificationCode)
 		self.checkUrlRoute(verifyUrl)
@@ -194,6 +197,9 @@ class pHin():
 
 	'''
 	def getData(self, authToken, deviceUUID, vesselUrl):
+
+		self.checkInternetConnection()
+
 		def merge(dict_list):
 		    merged = {}
 		    for item in dict_list:
@@ -413,6 +419,13 @@ class pHin():
 		if authToken != None:
 			headers["Authorization"] = "Bearer " + authToken
 		return headers
+
+	def checkInternetConnection(self):
+		try:
+			requests.get("http://www.google.com")
+		except requests.ConnectionError:
+			self.logger.critical("No Internet Connection!")
+			raise requests.ConnectionError
 
 	def checkRequest(self, request):
 		if request == None:
