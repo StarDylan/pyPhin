@@ -419,13 +419,13 @@ class pHin():
 		try:
 			return requests.get(url,headers=headers)
 		except requests.ConnectionError:
-			self.logger.critical("No Internet Connection!")
+			self.logger.critical("Cannot Connect to Server")
 			raise requests.ConnectionError
 	def requestPost(self,url,json={},headers={}):
 		try:
 			return requests.post(url,headers=headers,json=json)
 		except requests.ConnectionError:
-			self.logger.critical("No Internet Connection!")
+			self.logger.critical("Cannot Connect to Server")
 			raise requests.ConnectionError
 
 	def checkRequest(self, request):
