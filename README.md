@@ -3,7 +3,7 @@
 
 # pyPhin
 
-## ARCHIVED REPOSITORY
+## :warning::warning::warning: ARCHIVED REPOSITORY :warning::warning::warning:
 
 Unfortunately, Hayward has decided to sunset pHin on December 20, 2021. As such this repository has nothing to connect to and has been archived.
 
