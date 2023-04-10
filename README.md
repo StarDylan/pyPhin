@@ -3,6 +3,10 @@
 
 # pyPhin
 
+## ARCHIVED REPOSITORY
+
+Unfortunately, Hayward has decided to sunset pHin on December 20, 2021. As such this repository has nothing to connect to and has been archived.
+
 ## Simple Usage
 1. Generate a UUID
 ```python
